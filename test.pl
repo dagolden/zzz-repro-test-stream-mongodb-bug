@@ -2,7 +2,6 @@ use strict;
 use warnings;
 use Test::More 'no_plan';
 
-use MongoDB::Timestamp; # needed if db is being run as master
 use MongoDB;
 
 my @testdbs;
