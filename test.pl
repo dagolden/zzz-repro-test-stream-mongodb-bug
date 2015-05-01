@@ -4,8 +4,6 @@ use Test::More 'no_plan';
 
 use MongoDB;
 
-my @testdbs;
-
 sub build_client {
     my @args = @_;
     my $host = exists $ENV{MONGOD} ? $ENV{MONGOD} : 'localhost';
@@ -16,25 +14,8 @@ sub build_client {
     );
 }
 
-sub get_test_db {
-    my $conn = shift;
-    my $testdb = 'testdb' . int(rand(2**31));
-    my $db = $conn->get_database($testdb) or die "Can't get database\n";
-    push(@testdbs, $db);
-    return  $db;
-}
-
-END {
-    for my $db (@testdbs) {
-        $db->drop;
-    }
-}
-
 my $conn = build_client();
-my $testdb = get_test_db($conn);
-$testdb->drop;
-my $dbname = $testdb->name;
-my $coll = $conn->ns("$dbname.test_collection");
+my $coll = $conn->ns("test.test_collection");
 $coll->ensure_index({"x.y" => 1}, {"name" => "foo"});
 
 ok(1);
