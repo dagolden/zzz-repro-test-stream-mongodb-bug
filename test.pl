@@ -13,7 +13,7 @@ sub our_get_indexes {
     # try command style for 2.8+
     my ( $ok, @indexes ) = try {
         my $command = Tie::IxHash->new( listIndexes => $self->name, cursor => {} );
-        my $res     = $self->_database->_try_run_command($command);
+        my $res = $self->_database->get_collection('$cmd')->find_one($command);
         my $cursor  = MongoDB::Cursor->new(
             started_iterating => 1,                 # we have the first batch
             _client           => $self->_database->_client,
