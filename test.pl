@@ -13,28 +13,7 @@ sub our_get_indexes {
     # try command style for 2.8+
     my ( $ok, @indexes ) = try {
         my $command = Tie::IxHash->new( listIndexes => $self->name, cursor => {} );
-        # don't actually run command, fake response
-        my $res = {
-            "cursor" => {
-                "id"         => 0,
-                "ns"         => 'test.$cmd.listIndexes.test_collection',
-                "firstBatch" => [
-                    {
-                        "v"    => 1,
-                        "key"  => { "_id" => 1 },
-                        "name" => "_id_",
-                        "ns"   => "test.test_collection"
-                    },
-                    {
-                        "v"    => 1,
-                        "key"  => { "x.y" => 1 },
-                        "name" => "foo",
-                        "ns"   => "test.test_collection"
-                    }
-                ]
-            },
-            "ok" => 1
-          };
+        my $res     = $self->_database->_try_run_command($command);
         my @list;
         # XXX RC0 - RC2 give collections result; RC3+ give cursor result
         if ( $res->{indexes} ) {
