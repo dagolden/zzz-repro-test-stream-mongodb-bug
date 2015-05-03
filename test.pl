@@ -5,17 +5,11 @@ use Test::More 'no_plan';
 use MongoDB;
 use Devel::Peek;
 
-sub build_client {
-    my @args = @_;
-    my $host = exists $ENV{MONGOD} ? $ENV{MONGOD} : 'localhost';
-
-    # long query timeout may help spurious failures on heavily loaded CI machines
-    return MongoDB::MongoClient->new(
-        host => $host, find_master => 1, query_timeout => 60000, @args,
-    );
-}
-
-my $conn = build_client();
+my $conn = MongoDB::MongoClient->new(
+    host          => (exists $ENV{MONGOD} ? $ENV{MONGOD} : 'localhost'),
+    find_master   => 1,
+    query_timeout => 60000
+);
 my $coll = $conn->ns("test.test_collection");
 
 ok(1);
@@ -24,7 +18,6 @@ my ($index) = $coll->get_indexes;
 Dump($_);
 Dump($index);
 ok(1);
-
 
 __END__
 
