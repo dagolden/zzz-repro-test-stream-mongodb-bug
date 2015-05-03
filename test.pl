@@ -4,6 +4,60 @@ use Test::More 'no_plan';
 
 use MongoDB;
 use Devel::Peek;
+use Try::Tiny;
+use Safe::Isa;
+
+sub our_get_indexes {
+    my ($self) = @_;
+
+    # try command style for 2.8+
+    my ( $ok, @indexes ) = try {
+        my $command = Tie::IxHash->new( listIndexes => $self->name, cursor => {} );
+        my $res     = $self->_database->_try_run_command($command);
+        my @list;
+        # XXX RC0 - RC2 give collections result; RC3+ give cursor result
+        if ( $res->{indexes} ) {
+            @list = @{$res->{indexes}};
+        }
+        else {
+            my $cursor  = MongoDB::Cursor->new(
+                started_iterating => 1,                 # we have the first batch
+                _client           => $self->_database->_client,
+                _master           => $self->_database->_client,    # fake this because we're already iterating
+                _ns               => $res->{cursor}{ns},
+                _agg_first_batch => $res->{cursor}{firstBatch},
+                _agg_batch_size  => scalar @{ $res->{cursor}{firstBatch} }, # for has_next
+                _query           => $command,
+            );
+            $cursor->_init( $res->{cursor}{id} );
+            @list = $cursor->all;
+        }
+        return 1, @list;
+    }
+    catch {
+        if ( $_->$_isa('MongoDB::DatabaseError') ) {
+            my $cmd_result = $_->result->result;
+            my $code = $cmd_result->{code} || 0;
+            if ( $code == 26 ) {
+                return 1, (); # empty
+            }
+            elsif ($code == 59 || $code == 13390 ) {
+                return 0;
+            }
+            elsif ( ($cmd_result->{errmsg} || '') =~ m{^no such cmd} ) {
+                return 0;
+            }
+        }
+        die $_;
+    };
+
+    return @indexes if $ok;
+
+    # fallback to earlier style
+    return $self->_database->get_collection('system.indexes')->query({
+        ns => $self->full_name,
+    })->all;
+}
 
 my $conn = MongoDB::MongoClient->new(
     host          => (exists $ENV{MONGOD} ? $ENV{MONGOD} : 'localhost'),
@@ -14,7 +68,7 @@ my $coll = $conn->ns("test.test_collection");
 
 ok(1);
 Dump($_);
-my ($index) = $coll->get_indexes;
+my ($index) = our_get_indexes($coll);
 Dump($_);
 Dump($index);
 ok(1);
