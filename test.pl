@@ -21,7 +21,7 @@ $coll->ensure_index({"x.y" => 1}, {"name" => "foo"});
 
 ok(1);
 Dump($_);
-my ($index) = grep { 1 } $coll->get_indexes;
+my ($index) = $coll->get_indexes;
 Dump($_);
 Dump($index);
 ok(1);
