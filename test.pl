@@ -14,7 +14,7 @@ my $coll = $conn->ns("test.test_collection");
 
 ok(1);
 Dump($_);
-my ($index) = $conn->ns('test.system.indexes')->query({ ns => $coll->full_name, })->all;
+my ($index) = $coll->get_indexes;
 Dump($_);
 Dump($index);
 ok(1);
