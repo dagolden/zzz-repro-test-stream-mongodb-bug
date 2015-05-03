@@ -3,6 +3,7 @@ use warnings;
 use Test::More 'no_plan';
 
 use MongoDB;
+use Devel::Peek;
 
 sub build_client {
     my @args = @_;
@@ -20,6 +21,7 @@ $coll->ensure_index({"x.y" => 1}, {"name" => "foo"});
 
 ok(1);
 my ($index) = grep { $_->{name} eq 'foo' } $coll->get_indexes;
+Dump($index);
 ok(1);
 
 
