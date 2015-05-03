@@ -20,7 +20,9 @@ my $coll = $conn->ns("test.test_collection");
 $coll->ensure_index({"x.y" => 1}, {"name" => "foo"});
 
 ok(1);
+Dump($_);
 my ($index) = grep { $_->{name} eq 'foo' } $coll->get_indexes;
+Dump($_);
 Dump($index);
 ok(1);
 
