@@ -35,28 +35,10 @@ sub our_get_indexes {
         return 1, @list;
     }
     catch {
-        if ( $_->$_isa('MongoDB::DatabaseError') ) {
-            my $cmd_result = $_->result->result;
-            my $code = $cmd_result->{code} || 0;
-            if ( $code == 26 ) {
-                return 1, (); # empty
-            }
-            elsif ($code == 59 || $code == 13390 ) {
-                return 0;
-            }
-            elsif ( ($cmd_result->{errmsg} || '') =~ m{^no such cmd} ) {
-                return 0;
-            }
-        }
         die $_;
     };
 
-    return @indexes if $ok;
-
-    # fallback to earlier style
-    return $self->_database->get_collection('system.indexes')->query({
-        ns => $self->full_name,
-    })->all;
+    return @indexes;
 }
 
 my $conn = MongoDB::MongoClient->new(
