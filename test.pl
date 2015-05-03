@@ -17,7 +17,6 @@ sub build_client {
 
 my $conn = build_client();
 my $coll = $conn->ns("test.test_collection");
-$coll->ensure_index({"x.y" => 1}, {"name" => "foo"});
 
 ok(1);
 Dump($_);
